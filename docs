@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Basic map</title>
+    <meta name="viewport" content="width=device-width, 
+        initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        body {
+            padding: 0;
+            margin: 0;
+        }
+
+        html,
+        body,
+        #map {
+            height: 100%;
+            width: 100%;
+        }
+
+
+        .description {
+            width: 250px;
+            font-size: 16px;
+            color: #333333;
+            font-family: "Open Sans", Helvetica, sans-serif;
+            padding: 10px 14px;
+            background-color: rgba(245, 245, 220, 0.8);
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+            border-radius: 5px;
+            border: 1px solid grey;
+        }
+
+        .description img {
+            width: 200px;
+            margin: auto;
+            display: block;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="map"></div>
+    <script> let map = L.map("map", { center: [55.929766, 37.519441], zoom: 14 });
+        let imagery = L.tileLayer(
+            "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}",
+            {
+                attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
+            }
+        ).addTo(map);
+        let osm = L.tileLayer(
+            "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png",
+            {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            }).addTo(map);
+
+        // Кординаты
+        coords = [
+            [55.929766, 37.519441],
+            [55.943444, 37.513827]
+        ];
+        // Точки
+
+        let pnt = L.layerGroup();
+        L.marker(coords[0]).bindPopup("<b>Это МФТИ").addTo(pnt);
+        L.marker(coords[1]).bindPopup("<b>Это дом").addTo(pnt);
+
+
+        // Полигон
+        let pol = L.polygon(
+            [
+                [55.930218, 37.515155],
+                [55.931071, 37.520820],
+                [55.928439, 37.522171],
+                [55.927429, 37.516796]
+            ],
+            { color: "white", fillColor: "green", weight: 4 }
+        ).addTo(map);
+
+        let description = L.control({ position: "bottomright" });
+        description.onAdd = function () {
+            let div = L.DomUtil.create("div", "description");
+            div.innerHTML =
+                '<p><b>Эта карта была сделана с помощью Leaflet</b></p>' +
+                '<img src="https://cdn.worldvectorlogo.com/logos/leaflet-1.svg"><hr>' +
+                '<p>Она показывает его основные возможности.</p><hr>' +
+                '<p>Вы можете нажать на любое место на карте, чтобы узнать его координаты.</p><hr>' +
+                '<p>Также вы можете включать и выключать слои!</p><hr>' +
+                '<p>Здесь были добавлены следующие элементы:<br>' +
+                '<p><ul>' +
+                '<li>Места</li>' +
+                '<li>Полигоны</li>'
+            '</ul></p>';
+
+            return div;
+        };
+        description.addTo(map);
+        let popup = L.popup();
+        map.addEventListener("click",
+            function (e) {
+                popup
+                    .setLatLng(e.latlng)
+                    .setContent(
+                        "Вы кликнули на точку со следующими координатами: <br>" +
+                        "<b>Долгота:</b> " + e.latlng.lng + "<br>" +
+                        "<b>Широта:</b> " + e.latlng.lat
+                    )
+                    .openOn(map);
+            });
+        let baseMaps = {
+            "OSM": osm,
+            "Imagery": imagery
+        };
+        let overlayMaps = {
+            "Важные места": pnt,
+            "Территория МФТИ": pol
+        };
+        L.control.layers(baseMaps, overlayMaps, { position: "topleft", collapsed: false }).addTo(map);
+
+    </script>
+</body>
+
+</html>
